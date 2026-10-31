@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 新建 / 编辑项目弹窗 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/DvCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        style="@style/DvText.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:labelFor="@id/name"
+        android:text="@string/settings_project_name" />
+
+    <EditText
+        android:id="@+id/name"
+        style="@style/DvInput.Field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        style="@style/DvText.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:labelFor="@id/color"
+        android:text="@string/settings_project_color" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/color_preview"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="10dp" />
+
+        <EditText
+            android:id="@+id/color"
+            style="@style/DvInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="monospace" />
+    </LinearLayout>
+
+    <!-- 预设颜色（与桌面端相同） -->
+    <com.devvault.android.ChipFlow
+        android:id="@+id/palette"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="14dp" />
+
+    <TextView
+        style="@style/DvText.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:labelFor="@id/description"
+        android:text="@string/description" />
+
+    <EditText
+        android:id="@+id/description"
+        style="@style/DvInput.Field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/save"
+        style="@style/DvButton.Primary"
+        android:layout_width="match_parent"
+        android:layout_marginBottom="10dp"
+        android:text="@string/save" />
+
+    <Button
+        android:id="@+id/delete"
+        style="@style/DvButton.Danger"
+        android:layout_width="match_parent"
+        android:text="@string/settings_project_delete"
+        android:visibility="gone" />
+</LinearLayout>

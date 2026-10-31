@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 卡片中的一个字段：点击整行复制；密码等敏感字段可显隐；http 地址可打开 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="3dp"
+    android:background="@drawable/bg_field_row"
+    android:foreground="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:minHeight="38dp"
+    android:orientation="horizontal"
+    android:paddingStart="10dp"
+    android:paddingEnd="0dp">
+
+    <TextView
+        android:id="@+id/field_name"
+        style="@style/DvText"
+        android:layout_width="84dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="6dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/muted"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/field_value"
+        style="@style/DvText.Mono"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <ImageButton
+        android:id="@+id/field_toggle"
+        style="@style/DvIconButton.Small"
+        android:contentDescription="@string/entry_toggle_secret"
+        android:src="@drawable/ic_eye"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/field_open"
+        style="@style/DvIconButton.Small"
+        android:contentDescription="@string/entry_open_url"
+        android:src="@drawable/ic_external"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/field_copy"
+        style="@style/DvIconButton.Small"
+        android:contentDescription="@string/entry_copy"
+        android:src="@drawable/ic_copy" />
+</LinearLayout>

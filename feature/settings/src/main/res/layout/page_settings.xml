@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 设置页：账号与云同步、账号安全策略、安全、项目、关于 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
+
+    <!-- 账号与云同步 -->
+    <TextView
+        style="@style/DvText.Section"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_account_sync" />
+
+    <FrameLayout
+        android:id="@+id/sync_card"
+        style="@style/DvCard.Settings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include
+            android:id="@+id/login"
+            layout="@layout/view_login" />
+
+        <LinearLayout
+            android:id="@+id/logged_in"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/avatar"
+                    style="@style/DvText.Medium"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_avatar"
+                    android:gravity="center"
+                    android:textColor="@color/primary"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/user_name"
+                        style="@style/DvText.Heading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/user_server"
+                        style="@style/DvText.Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:ellipsize="end"
+                        android:maxLines="1" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/sync_status"
+                style="@style/DvText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_status"
+                android:paddingStart="12dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="10dp"
+                android:textColor="@color/text2"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/sync_now"
+                    style="@style/DvButton.Primary"
+                    android:layout_width="0dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_weight="1"
+                    android:text="@string/settings_sync_now" />
+
+                <Button
+                    android:id="@+id/logout"
+                    style="@style/DvButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/settings_logout" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/change_password"
+                style="@style/DvLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:text="@string/settings_change_password" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- 账号安全策略（登录后显示） -->
+    <LinearLayout
+        android:id="@+id/policy_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            style="@style/DvText.Section"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/settings_policy" />
+
+        <LinearLayout
+            style="@style/DvCard.Settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/export_row"
+                style="@style/SettingsRow"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout style="@style/SettingsRow.Text">
+                    <TextView
+                        style="@style/DvText.Title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_allow_export" />
+                    <TextView
+                        style="@style/SettingsRow.Desc"
+                        android:text="@string/settings_allow_export_desc" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/allow_export"
+                    style="@style/SettingsRow.Switch" />
+            </LinearLayout>
+
+            <View
+                style="@style/DvDivider"
+                android:layout_marginBottom="14dp" />
+
+            <LinearLayout
+                android:id="@+id/wipe_row"
+                style="@style/SettingsRow"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout style="@style/SettingsRow.Text">
+                    <TextView
+                        style="@style/DvText.Title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_wipe" />
+                    <TextView
+                        style="@style/SettingsRow.Desc"
+                        android:text="@string/settings_wipe_desc" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/wipe_on_logout"
+                    style="@style/SettingsRow.Switch" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/DvText.Title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_code" />
+
+            <TextView
+                android:id="@+id/code_state"
+                style="@style/DvText.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" />
+
+            <Button
+                android:id="@+id/change_code"
+                style="@style/DvButton.Small"
+                android:layout_width="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/settings_code_change"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 安全 -->
+    <TextView
+        style="@style/DvText.Section"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/settings_security" />
+
+    <LinearLayout
+        style="@style/DvCard.Settings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout style="@style/SettingsRow">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginEnd="12dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_lock"
+                app:tint="@color/text2" />
+
+            <LinearLayout style="@style/SettingsRow.Text">
+                <TextView
+                    style="@style/DvText.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_app_lock" />
+                <TextView
+                    style="@style/SettingsRow.Desc"
+                    android:text="@string/settings_app_lock_desc" />
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/app_lock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/settings_app_lock" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 项目 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/DvText.Section"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/settings_projects" />
+
+        <Button
+            android:id="@+id/new_project"
+            style="@style/DvButton.Small"
+            android:layout_width="wrap_content"
+            android:text="@string/settings_new_project" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/projects"
+        style="@style/DvCard.List"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/projects_empty"
+            style="@style/DvText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="@string/settings_projects_empty"
+            android:textColor="@color/muted"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <!-- 关于 -->
+    <TextView
+        style="@style/DvText.Section"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/settings_about" />
+
+    <LinearLayout
+        style="@style/DvCard.Settings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/bg_brand"
+                android:importantForAccessibility="no"
+                android:padding="11dp"
+                android:src="@drawable/ic_key"
+                app:tint="@android:color/white" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/DvText.Heading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name" />
+
+                <TextView
+                    style="@style/DvText.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/settings_about_version" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            style="@style/DvText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="5dp"
+            android:text="@string/settings_about_desc"
+            android:textColor="@color/text2"
+            android:textSize="13sp" />
+    </LinearLayout>
+</LinearLayout>

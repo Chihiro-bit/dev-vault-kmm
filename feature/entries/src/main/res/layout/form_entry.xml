@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 新建 / 编辑账号（全屏页面，inflate 到 page_form 的 content 中）。字段名随类型变化，由 EntryScreens 设置 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- 类型 -->
+    <LinearLayout
+        style="@style/DvCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="@string/entry_type" />
+
+        <com.devvault.android.ChipFlow
+            android:id="@+id/types"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- 基本信息 -->
+    <LinearLayout
+        style="@style/DvCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/entry_title" />
+
+        <EditText
+            android:id="@+id/title"
+            style="@style/DvInput.Field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/entry_title_hint" />
+
+        <TextView
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/project" />
+
+        <Button
+            android:id="@+id/project"
+            style="@style/DvButton.Select"
+            android:layout_width="match_parent"
+            android:layout_marginBottom="14dp" />
+
+        <TextView
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/entry_env" />
+
+        <com.devvault.android.ChipFlow
+            android:id="@+id/envs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- 凭据 -->
+    <LinearLayout
+        style="@style/DvCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/url_label"
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/url"
+            android:text="@string/entry_url" />
+
+        <EditText
+            android:id="@+id/url"
+            style="@style/DvInput.Field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:inputType="textUri" />
+
+        <TextView
+            android:id="@+id/user_label"
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/username"
+            android:text="@string/entry_username" />
+
+        <EditText
+            android:id="@+id/username"
+            style="@style/DvInput.Field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/password_label"
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/password"
+            android:text="@string/entry_password" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/password"
+                style="@style/DvInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="monospace"
+                android:inputType="textPassword" />
+
+            <ImageButton
+                android:id="@+id/generate"
+                style="@style/DvIconButton"
+                android:contentDescription="@string/entry_generate_password"
+                android:src="@drawable/ic_wand" />
+
+            <ImageButton
+                android:id="@+id/toggle_password"
+                style="@style/DvIconButton"
+                android:contentDescription="@string/entry_toggle_password"
+                android:src="@drawable/ic_eye" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/verify_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/DvText.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:labelFor="@id/verify_code"
+                android:text="@string/entry_verify_code" />
+
+            <EditText
+                android:id="@+id/verify_code"
+                style="@style/DvInput.Field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/totp_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/DvText.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:labelFor="@id/totp"
+                android:text="@string/entry_totp_secret" />
+
+            <EditText
+                android:id="@+id/totp"
+                style="@style/DvInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:hint="@string/entry_totp_hint" />
+
+            <TextView
+                android:id="@+id/totp_preview"
+                style="@style/DvText.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/ok"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/entry_expiry" />
+
+        <Button
+            android:id="@+id/expiry"
+            style="@style/DvButton.Picker"
+            android:layout_width="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:drawableStart="@drawable/ic_calendar_small"
+            android:drawablePadding="6dp"
+            android:drawableTint="@color/muted" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/add_verify"
+                style="@style/DvButton.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_marginEnd="8dp"
+                android:text="@string/entry_add_verify" />
+
+            <Button
+                android:id="@+id/add_totp"
+                style="@style/DvButton.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:text="@string/entry_add_totp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 自定义字段 -->
+    <LinearLayout
+        style="@style/DvCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="@string/entry_custom_fields" />
+
+        <LinearLayout
+            android:id="@+id/extras"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <com.devvault.android.ChipFlow
+            android:id="@+id/presets"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/DvText.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/entry_custom_hint" />
+    </LinearLayout>
+
+    <!-- 备注与标签 -->
+    <LinearLayout
+        style="@style/DvCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/notes"
+            android:text="@string/notes" />
+
+        <EditText
+            android:id="@+id/notes"
+            style="@style/DvInput.Field.Multiline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/tags"
+            android:text="@string/tags" />
+
+        <EditText
+            android:id="@+id/tags"
+            style="@style/DvInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/entry_tags_hint" />
+    </LinearLayout>
+
+    <!-- 已有记录才显示 -->
+    <LinearLayout
+        android:id="@+id/existing_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/clone"
+            style="@style/DvButton"
+            android:layout_width="0dp"
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
+            android:text="@string/entry_clone" />
+
+        <Button
+            android:id="@+id/delete"
+            style="@style/DvButton.Danger"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="@string/delete" />
+    </LinearLayout>
+</LinearLayout>

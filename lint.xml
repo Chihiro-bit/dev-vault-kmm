@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- 输入框统一在 DvInput 样式中设置 importantForAutofill=noExcludeDescendants：
+         密码保险库不让系统自动填充服务读取主密码、密码和动态码密钥。lint 只检查元素属性，看不到样式。 -->
+    <issue id="Autofill" severity="ignore" />
+    <!-- 行背景是点击水波纹（selectableItemBackground），不是重复的纯色背景 -->
+    <issue id="Overdraw" severity="ignore" />
+</lint>

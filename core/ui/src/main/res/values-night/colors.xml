@@ -1,0 +1,23 @@
+<resources>
+    <color name="bg">#FF15171C</color>
+    <color name="panel">#FF1D2027</color>
+    <color name="side">#FF181A20</color>
+    <color name="hover">#0DFFFFFF</color>
+    <color name="text">#FFE6E8EC</color>
+    <color name="text2">#FFB4BAC4</color>
+    <color name="muted">#FF7D8592</color>
+    <color name="border">#FF2B2F38</color>
+    <color name="border_strong">#FF3A3F4A</color>
+    <color name="primary">#FF5B84FF</color>
+    <color name="primary_hover">#FF7095FF</color>
+    <color name="primary_weak">#295B84FF</color>
+    <color name="danger">#FFF06368</color>
+    <color name="danger_weak">#24F06368</color>
+    <color name="warn">#FFE38B00</color>
+    <color name="ok">#FF16A37B</color>
+    <color name="code_bg">#24E38B00</color>
+    <color name="code_text">#FFF3B556</color>
+    <color name="star">#FFF5A524</color>
+    <color name="primary_disabled">#805B84FF</color>
+    <color name="todo_overdue">#FFF97316</color>
+</resources>

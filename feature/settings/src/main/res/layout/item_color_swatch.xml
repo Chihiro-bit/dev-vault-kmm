@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 项目颜色预设中的一个色块，颜色由代码设置 -->
+<View xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="28dp"
+    android:layout_height="28dp"
+    android:foreground="?attr/selectableItemBackgroundBorderless" />

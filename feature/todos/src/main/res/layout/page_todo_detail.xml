@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 待办详情（全屏页面）：属性即改即存；描述、子任务、进展记录分区 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- 属性 -->
+    <LinearLayout
+        style="@style/DvPanelSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/parent"
+            style="@style/DvButton.Small"
+            android:layout_width="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:drawableStart="@drawable/ic_up_small"
+            android:drawablePadding="4dp"
+            android:drawableTint="@color/muted"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/check"
+                layout="@layout/view_todo_check" />
+
+            <EditText
+                android:id="@+id/title"
+                style="@style/DvInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:fontFamily="sans-serif-medium"
+                android:hint="@string/todo_title_hint"
+                android:imeOptions="actionDone"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/TodoProp">
+            <TextView style="@style/TodoProp.Name" android:text="@string/todo_status" />
+            <com.devvault.android.ChipFlow
+                android:id="@+id/statuses"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/TodoProp">
+            <TextView style="@style/TodoProp.Name" android:text="@string/todo_priority" />
+            <com.devvault.android.ChipFlow
+                android:id="@+id/priorities"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/TodoProp">
+            <TextView style="@style/TodoProp.Name" android:text="@string/todo_dates" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                tools:ignore="NestedWeights">
+
+                <Button
+                    android:id="@+id/start_date"
+                    style="@style/DvButton.Picker"
+                    android:layout_width="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    style="@style/DvText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:text="@string/todo_arrow"
+                    android:textColor="@color/muted" />
+
+                <Button
+                    android:id="@+id/due_date"
+                    style="@style/DvButton.Picker"
+                    android:layout_width="0dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout style="@style/TodoProp">
+            <TextView style="@style/TodoProp.Name" android:text="@string/todo_remind" />
+            <Button
+                android:id="@+id/remind"
+                style="@style/DvButton.Picker"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:drawableStart="@drawable/ic_bell_small"
+                android:drawablePadding="6dp"
+                android:drawableTint="@color/muted"
+                android:gravity="center_vertical|start" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/TodoProp">
+            <TextView style="@style/TodoProp.Name" android:text="@string/todo_repeat" />
+            <Button
+                android:id="@+id/repeat"
+                style="@style/DvButton.Select"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/project_row"
+            style="@style/TodoProp">
+            <TextView style="@style/TodoProp.Name" android:text="@string/project" />
+            <Button
+                android:id="@+id/project"
+                style="@style/DvButton.Select"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <LinearLayout style="@style/TodoProp">
+            <TextView
+                style="@style/TodoProp.Name"
+                android:labelFor="@id/tags"
+                android:text="@string/tags" />
+            <EditText
+                android:id="@+id/tags"
+                style="@style/DvInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/todo_tags_hint" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 描述 -->
+    <View style="@style/DvDivider" />
+    <LinearLayout
+        style="@style/DvPanelSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            style="@style/TodoSectionTitle"
+            android:labelFor="@id/notes"
+            android:text="@string/description" />
+
+        <EditText
+            android:id="@+id/notes"
+            style="@style/DvInput.Field.Multiline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:hint="@string/todo_notes_hint" />
+    </LinearLayout>
+
+    <!-- 子任务（子任务本身不能再有子任务） -->
+    <LinearLayout
+        android:id="@+id/subtasks_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <View style="@style/DvDivider" />
+        <LinearLayout
+            style="@style/DvPanelSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/subtasks_title"
+                style="@style/TodoSectionTitle"
+                android:labelFor="@id/subtask_input"
+                android:text="@string/todo_subtasks" />
+
+            <ProgressBar
+                android:id="@+id/subtask_progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginBottom="6dp"
+                android:progressTint="@color/ok"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/subtask_list"
+                style="@style/DvCard.List"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:background="@null"
+                android:elevation="0dp" />
+
+            <EditText
+                android:id="@+id/subtask_input"
+                style="@style/DvInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/todo_subtask_hint"
+                android:imeOptions="actionDone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 进展记录 -->
+    <View style="@style/DvDivider" />
+    <LinearLayout
+        style="@style/DvPanelSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/progress_title"
+            style="@style/TodoSectionTitle"
+            android:labelFor="@id/comment_input"
+            android:text="@string/todo_progress" />
+
+        <LinearLayout
+            android:id="@+id/comment_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/comment_input"
+                style="@style/DvInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/todo_progress_hint"
+                android:inputType="textMultiLine"
+                android:maxLines="6" />
+
+            <ImageButton
+                android:id="@+id/send_comment"
+                style="@style/DvIconButton"
+                android:contentDescription="@string/todo_send_progress"
+                android:src="@drawable/ic_send"
+                app:tint="@color/primary" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/created_info"
+        style="@style/DvText.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp" />
+</LinearLayout>

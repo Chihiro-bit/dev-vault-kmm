@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 待办页顶部：统计卡片、快速添加、分组方式。整块缓存复用，避免重绘时丢失正在输入的内容 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <include android:id="@+id/stat_active" layout="@layout/item_todo_stat" />
+            <include android:id="@+id/stat_top" layout="@layout/item_todo_stat" />
+            <include android:id="@+id/stat_today" layout="@layout/item_todo_stat" />
+            <include android:id="@+id/stat_overdue" layout="@layout/item_todo_stat" />
+            <include android:id="@+id/stat_done" layout="@layout/item_todo_stat" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- 快速添加 -->
+    <LinearLayout
+        style="@style/DvCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:padding="10dp">
+
+        <EditText
+            android:id="@+id/quick_title"
+            style="@style/DvInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:hint="@string/todo_quick_hint"
+            android:imeOptions="actionDone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/quick_priorities"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <Button
+                android:id="@+id/quick_add"
+                style="@style/DvButton.Primary"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:enabled="false"
+                android:text="@string/todo_add" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 分组方式与清理 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/DvText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:text="@string/todo_group"
+            android:textColor="@color/muted"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/group_by"
+            style="@style/DvButton.Select.Small"
+            android:layout_width="wrap_content" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/clear_done"
+            style="@style/DvButton.Small.Danger"
+            android:layout_width="wrap_content"
+            android:text="@string/todo_clear_done"
+            android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>

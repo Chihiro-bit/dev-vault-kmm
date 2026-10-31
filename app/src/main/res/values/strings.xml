@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_entries">账号密码</string>
+    <string name="tab_todos">待办事项</string>
+    <string name="tab_settings">设置</string>
+    <string name="search_entries_hint">搜索名称、账号、地址、备注、标签</string>
+    <string name="search_todos_hint">搜索待办…</string>
+    <string name="new_entry">新建记录</string>
+    <string name="choose_project">选择项目</string>
+    <string name="new_project">+ 新建项目</string>
+    <string name="locked_title">DevVault 已锁定</string>
+    <string name="locked_desc">验证身份后继续查看账号密码与待办</string>
+    <string name="unlock">解锁</string>
+    <string name="dot">●</string>
+</resources>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 修改账号安全策略弹窗：需要安全码 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/DvCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/allow_export"
+        style="@style/DvText.Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:minHeight="40dp"
+        android:text="@string/settings_allow_export" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/wipe_on_logout"
+        style="@style/DvText.Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:minHeight="40dp"
+        android:text="@string/settings_wipe" />
+
+    <LinearLayout
+        android:id="@+id/current_code_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            style="@style/DvText.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/current_code"
+            android:text="@string/settings_current_code" />
+
+        <EditText
+            android:id="@+id/current_code"
+            style="@style/DvInput.Field.Password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/new_code_label"
+        style="@style/DvText.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:labelFor="@id/new_code"
+        android:text="@string/settings_set_code" />
+
+    <EditText
+        android:id="@+id/new_code"
+        style="@style/DvInput.Field.Password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        style="@style/DvText.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:labelFor="@id/confirm_code"
+        android:text="@string/settings_confirm_code" />
+
+    <EditText
+        android:id="@+id/confirm_code"
+        style="@style/DvInput.Field.Password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/save"
+        style="@style/DvButton.Primary"
+        android:layout_width="match_parent"
+        android:text="@string/settings_save_policy" />
+</LinearLayout>

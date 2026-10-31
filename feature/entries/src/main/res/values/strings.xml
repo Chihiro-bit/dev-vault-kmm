@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="entry_favorite">收藏</string>
+    <string name="entry_copy">复制</string>
+    <string name="entry_toggle_secret">显示或隐藏</string>
+    <string name="entry_open_url">打开地址</string>
+    <string name="entry_totp">动态码</string>
+    <string name="entry_copy_totp">复制动态码</string>
+
+    <string name="entry_type">类型</string>
+    <string name="entry_title">名称</string>
+    <string name="entry_title_hint">如：商城测试账号</string>
+    <string name="entry_url">登录地址</string>
+    <string name="entry_username">账号</string>
+    <string name="entry_password">密码</string>
+    <string name="entry_env">环境</string>
+    <string name="entry_generate_password">生成密码</string>
+    <string name="entry_toggle_password">显示或隐藏密码</string>
+    <string name="entry_verify_code">固定验证码</string>
+    <string name="entry_totp_secret">动态码密钥（TOTP）</string>
+    <string name="entry_totp_hint">base32 密钥或 otpauth:// 链接</string>
+    <string name="entry_expiry">有效期</string>
+    <string name="entry_add_verify">+ 验证码</string>
+    <string name="entry_add_totp">+ 动态码</string>
+    <string name="entry_custom_fields">自定义字段</string>
+    <string name="entry_custom_hint">点击锁形图标可标记为敏感字段，加密保存并默认隐藏</string>
+    <string name="entry_tags_hint">多个标签用空格或逗号分隔</string>
+    <string name="entry_clone">复制为新记录</string>
+    <string name="entry_extra_key">名称</string>
+    <string name="entry_extra_value">值</string>
+    <string name="entry_extra_secret">敏感字段</string>
+    <string name="entry_extra_delete">删除字段</string>
+</resources>

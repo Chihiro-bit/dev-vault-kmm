@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="todo_quick_hint">添加待办，回车保存</string>
+    <string name="todo_add">添加</string>
+    <string name="todo_group">分组</string>
+    <string name="todo_clear_done">清理已完成</string>
+    <string name="todo_toggle">切换完成状态</string>
+    <string name="todo_status">状态</string>
+    <string name="todo_priority">优先级</string>
+    <string name="todo_dates">日期</string>
+    <string name="todo_start">开始</string>
+    <string name="todo_due">截止</string>
+    <string name="todo_remind">提醒</string>
+    <string name="todo_repeat">重复</string>
+    <string name="todo_tags_hint">空格分隔</string>
+    <string name="todo_notes_hint">添加描述…</string>
+    <string name="todo_subtasks">子任务</string>
+    <string name="todo_subtask_hint">添加子任务，回车保存</string>
+    <string name="todo_progress">进展记录</string>
+    <string name="todo_progress_hint">记录进展…</string>
+    <string name="todo_send_progress">发送进展</string>
+    <string name="todo_delete_progress">删除进展</string>
+    <string name="todo_delete">删除待办</string>
+    <string name="todo_arrow">→</string>
+    <string name="todo_dot">●</string>
+    <string name="todo_title_hint">待办标题</string>
+</resources>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 编辑页中的一个自定义字段 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <EditText
+        android:id="@+id/extra_key"
+        style="@style/DvInput"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="6dp"
+        android:layout_weight="0.38"
+        android:hint="@string/entry_extra_key" />
+
+    <EditText
+        android:id="@+id/extra_value"
+        style="@style/DvInput"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.62"
+        android:hint="@string/entry_extra_value" />
+
+    <ImageButton
+        android:id="@+id/extra_secret"
+        style="@style/DvIconButton"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:padding="8dp"
+        android:contentDescription="@string/entry_extra_secret"
+        android:src="@drawable/ic_lock" />
+
+    <ImageButton
+        android:id="@+id/extra_delete"
+        style="@style/DvIconButton"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:padding="8dp"
+        android:contentDescription="@string/entry_extra_delete"
+        android:src="@drawable/ic_trash" />
+</LinearLayout>

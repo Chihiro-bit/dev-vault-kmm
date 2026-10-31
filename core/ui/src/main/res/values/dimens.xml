@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 大屏适配：内容列的最大宽度。屏幕更宽时内容居中，两侧留白，而不是拉伸 -->
+<resources>
+    <!-- 主界面单列内容（待办、设置、单列账号） -->
+    <dimen name="content_max_width">720dp</dimen>
+    <!-- 账号双列时的总宽度 -->
+    <dimen name="content_max_width_wide">1200dp</dimen>
+    <!-- 列表区域达到此宽度时账号卡片改为两列 -->
+    <dimen name="two_column_min_width">900dp</dimen>
+    <!-- 全屏表单 / 详情页的内容列 -->
+    <dimen name="form_max_width">640dp</dimen>
+    <!-- 居中弹窗 -->
+    <dimen name="dialog_max_width">520dp</dimen>
+    <!-- 底部弹出的项目切换 -->
+    <dimen name="sheet_max_width">560dp</dimen>
+    <!-- 页面左右最小留白 -->
+    <dimen name="page_margin">16dp</dimen>
+</resources>
