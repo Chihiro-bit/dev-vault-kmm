@@ -12,6 +12,7 @@ DevVault 的 Android / iOS 客户端，基于 **Kotlin Multiplatform + Compose M
 - **待办**：统计卡片筛选（进行中 / 最高优先级 / 今天到期 / 已逾期 / 已完成）；按状态 / 优先级 / 项目分组并可折叠；快速添加；详情页逐字段即改即存（状态、优先级、开始 / 截止日期、提醒、重复、项目、标签、描述）、子任务、进展记录；重复任务完成后自动生成下一次；清理已完成
 - **项目**：底部弹出的项目切换（相当于桌面端侧边栏），新建 / 编辑 / 删除
 - **云同步**：登录 / 注册 / 修改主密码 / 退出；修改后 3 秒自动同步、每 2 分钟及回到前台时同步；登录失效自动退出并提示
+- **兼容线路**：与桌面端 `cloud-http.ts` 相同，对 `https://vault.749log.com` 先常规探测，若网络中断携带 SNI 的 TLS 握手，自动改用不带 SNI 的连接（仍校验证书链与主机名）。目前仅 Android 支持，iOS 的 URLSession 无法关闭 SNI
 - **安全**：密码、TOTP 密钥、敏感字段和登录令牌用设备密钥（Android Keystore / iOS 钥匙串保护）加密存储；可选应用锁（指纹 / 面容 / 锁屏密码，离开超过 30 秒需重新验证）
 - 跟随系统深色模式（使用桌面端的深色配色）
 
@@ -39,6 +40,9 @@ DevVault 的 Android / iOS 客户端，基于 **Kotlin Multiplatform + Compose M
 
 # 单元测试（加密互通向量由桌面端同款 Node.js crypto 生成、AES-GCM 两种实现互相校验、TOTP RFC 向量）
 ./gradlew :shared:testDebugUnitTest
+
+# 额外访问真实服务器的只读接口，验证不带 SNI 的兼容线路
+DEVVAULT_NET_TEST=1 ./gradlew :shared:testDebugUnitTest
 ```
 
 ### iOS

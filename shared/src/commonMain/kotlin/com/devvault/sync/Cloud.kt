@@ -10,17 +10,7 @@ import com.devvault.model.CloudUser
 import com.devvault.model.ServerInfo
 import com.devvault.model.SyncStatus
 import com.devvault.platform.Platform
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.request.header
-import io.ktor.client.request.request
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
-import io.ktor.http.contentType
-import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,13 +40,7 @@ class Cloud(private val db: Db, private val repo: Repository) {
 
     private val apiVersion = 1
     internal val json = Json { ignoreUnknownKeys = true; explicitNulls = true; encodeDefaults = true }
-    private val http = HttpClient {
-        install(HttpTimeout) {
-            requestTimeoutMillis = 15_000
-            connectTimeoutMillis = 15_000
-        }
-        expectSuccess = false
-    }
+    private val http = CloudHttp()
 
     private val _state = MutableStateFlow(CloudState())
     val state: StateFlow<CloudState> = _state.asStateFlow()
@@ -104,50 +88,34 @@ class Cloud(private val db: Db, private val repo: Repository) {
         return u
     }
 
-    private suspend fun send(url: String, method: HttpMethod, body: String? = null, token: String? = null): HttpResponse =
-        withContext(Dispatchers.Default) {
-            try {
-                http.request(url) {
-                    this.method = method
-                    if (token != null) header("Authorization", "Bearer $token")
-                    if (body != null) {
-                        contentType(ContentType.Application.Json)
-                        setBody(body)
-                    }
-                }
-            } catch (e: CloudException) {
-                throw e
-            } catch (e: Exception) {
-                val timeout = e::class.simpleName?.contains("Timeout") == true
-                throw CloudException(if (timeout) "连接服务器超时，请检查地址或网络" else "无法连接服务器，请检查地址或网络")
-            }
-        }
+    private suspend fun send(url: String, method: HttpMethod, body: String? = null, token: String? = null): HttpResult =
+        http.send(url, method, body, token)
 
-    private suspend fun readError(res: HttpResponse): String {
+    private fun readError(res: HttpResult): String {
         try {
-            val body = json.parseToJsonElement(res.bodyAsText()) as? JsonObject
+            val body = json.parseToJsonElement(res.body) as? JsonObject
             body?.get("message")?.jsonPrimitive?.contentOrNull?.let { if (it.isNotEmpty()) return it }
         } catch (_: Exception) {
             // 非 JSON 响应
         }
-        return if (res.status.value == 401) "账号或密码错误" else "请求失败（HTTP ${res.status.value}）"
+        return if (res.status == 401) "账号或密码错误" else "请求失败（HTTP ${res.status}）"
     }
 
     private suspend fun postJson(url: String, body: String): String {
         val res = send(url, HttpMethod.Post, body)
-        if (!res.status.isSuccess()) throw CloudException(readError(res))
-        return res.bodyAsText()
+        if (!res.ok) throw CloudException(readError(res))
+        return res.body
     }
 
     /** 连接测试：读取服务器信息并检查接口版本 */
     suspend fun serverInfo(serverUrl: String): ServerInfo {
         val base = normalizeUrl(serverUrl)
         val res = send("$base/api/server/info", HttpMethod.Get)
-        if (!res.status.isSuccess()) {
-            throw CloudException(if (res.status.value == 404) "该地址不是 DevVault 服务器" else readError(res))
+        if (!res.ok) {
+            throw CloudException(if (res.status == 404) "该地址不是 DevVault 服务器" else readError(res))
         }
         val info = try {
-            json.decodeFromString(ServerInfo.serializer(), res.bodyAsText())
+            json.decodeFromString(ServerInfo.serializer(), res.body)
         } catch (e: Exception) {
             null
         }
@@ -283,12 +251,12 @@ class Cloud(private val db: Db, private val repo: Repository) {
         if (!s.loggedIn) throw CloudException("该功能需要登录后使用")
         val t = db.io { token() }
         val res = send("${s.serverUrl}$path", method, body, t)
-        if (res.status.value == 401) {
+        if (res.status == 401) {
             clearSession()
             onSessionExpired()
             throw CloudException("登录已过期，请重新登录")
         }
-        if (!res.status.isSuccess()) throw CloudException(readError(res))
-        return if (res.status.value == 204) "" else res.bodyAsText()
+        if (!res.ok) throw CloudException(readError(res))
+        return if (res.status == 204) "" else res.body
     }
 }
