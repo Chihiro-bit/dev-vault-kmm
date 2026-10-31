@@ -37,6 +37,8 @@ class TodoScreens(private val a: VaultActivity) {
     private val collapsed = mutableSetOf<String>()
     /** 顶部区域缓存：重绘列表时保留快速添加输入框中的内容 */
     private var header: ViewTodoHeaderBinding? = null
+    /** 宽屏时在右侧详情栏中打开的待办，列表中高亮 */
+    private var openId: Long? = null
 
     private data class Group(val key: String, val name: String, val color: String?, val items: List<Todo>)
 
@@ -165,6 +167,7 @@ class TodoScreens(private val a: VaultActivity) {
         splitTags(t.tags).forEach { meta("#$it", color(R.color.primary)) }
         b.todoMeta.isVisible = b.todoMeta.childCount > 0
         b.todoNotes.showText(t.notes.lineSequence().firstOrNull { it.isNotBlank() })
+        if (t.id == openId) b.root.setBackgroundColor(color(R.color.primary_weak))
         b.root.setOnClickListener { onOpen() }
         b.root
     }
@@ -179,6 +182,8 @@ class TodoScreens(private val a: VaultActivity) {
 
     private fun showDetail(t: Todo, subtasks: List<Todo>, comments: List<TodoComment>) = with(a) {
         val id = t.id
+        // 宽屏：详情栏中同时只显示一项待办，新打开的替换旧的
+        if (paneHost != null) closePanePages()
         val form = NativeForm(this, t.projectName ?: getString(R.string.unassigned), fullScreen = true)
         form.content.setPadding(0, 0, 0, dp(24))
         val b = PageTodoDetailBinding.inflate(layoutInflater, form.content, true)
@@ -261,8 +266,12 @@ class TodoScreens(private val a: VaultActivity) {
         }
         b.createdInfo.text = "创建于 ${t.createdAt.take(16).replace('T', ' ')}" + (t.doneAt?.let { " · 完成于 ${it.take(16).replace('T', ' ')}" } ?: "")
 
-        form.onDismiss { b.title.clearFocus(); b.tags.clearFocus(); b.notes.clearFocus() }
+        form.onDismiss {
+            b.title.clearFocus(); b.tags.clearFocus(); b.notes.clearFocus()
+            if (openId == id) { openId = null; render() }
+        }
         form.show()
+        if (form.inline) { openId = id; render() }
     }
 
 }

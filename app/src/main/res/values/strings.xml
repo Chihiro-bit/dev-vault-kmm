@@ -12,4 +12,8 @@
     <string name="locked_desc">验证身份后继续查看账号密码与待办</string>
     <string name="unlock">解锁</string>
     <string name="dot">●</string>
+    <string name="entry_pick_title">选择一条记录查看详情</string>
+    <string name="entry_pick_desc">账号、密码、动态码等信息会显示在这里，可直接复制</string>
+    <string name="todo_pick_title">选择一项待办查看详情</string>
+    <string name="todo_pick_desc">状态、子任务和进展记录会显示在这里</string>
 </resources>

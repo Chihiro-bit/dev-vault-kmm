@@ -13,13 +13,14 @@ import com.devvault.feature.entries.databinding.FormEntryBinding
 import com.devvault.feature.entries.databinding.ItemEntryFieldBinding
 import com.devvault.feature.entries.databinding.ItemEntryTotpBinding
 import com.devvault.feature.entries.databinding.ItemExtraFieldBinding
+import com.devvault.feature.entries.databinding.PageEntryDetailBinding
 import com.devvault.model.Entry
 import com.devvault.model.ExtraField
 import com.devvault.totp.Totp
 import com.devvault.totp.TotpConfig
 import com.devvault.util.Dates
 
-/** 账号密码：列表卡片（card_entry.xml）与编辑页（form_entry.xml） */
+/** 账号密码：列表卡片（card_entry.xml）、宽屏详情栏（page_entry_detail.xml）与编辑页（form_entry.xml） */
 class EntryScreens(private val activity: VaultActivity) {
     private val store get() = activity.store
 
@@ -29,10 +30,48 @@ class EntryScreens(private val activity: VaultActivity) {
         visibleSecrets.clear()
     }
 
-    fun card(entry: Entry): View = with(activity) {
+    /** 保存成功后回调记录 id；宽屏时用于在详情栏中显示刚保存的记录 */
+    var onSaved: (Long) -> Unit = {}
+
+    /**
+     * 列表卡片。窄屏显示完整字段，点击进入编辑；
+     * 宽屏（compact）只显示摘要，点击后在右侧详情栏查看，selected 为当前在详情栏中显示的记录。
+     */
+    fun card(entry: Entry, compact: Boolean = false, selected: Boolean = false, onOpen: () -> Unit = { edit(entry) }): View = with(activity) {
         val b = CardEntryBinding.inflate(layoutInflater)
+        b.root.setOnClickListener { onOpen() }
+        bindCard(b, entry, compact)
+        if (selected) {
+            b.root.background = shape(color(R.color.primary_weak), 10, color(R.color.primary))
+            b.root.isSelected = true
+        }
+        b.root
+    }
+
+    /** 宽屏右侧详情栏中的完整记录：字段全部展开，备注不截断，可直接复制 */
+    fun detail(entry: Entry, onClose: () -> Unit): View = with(activity) {
+        val page = PageEntryDetailBinding.inflate(layoutInflater)
+        val b = CardEntryBinding.inflate(layoutInflater, page.content, false)
+        bindCard(b, entry, compact = false)
+        b.root.foreground = null; b.root.isClickable = false
+        b.notes.maxLines = Int.MAX_VALUE
+        page.content.addView(b.root, 0)
+        fun time(v: String) = v.take(16).replace('T', ' ')
+        page.timestamps.showText(listOfNotNull(
+            entry.createdAt.takeIf { it.isNotBlank() }?.let { "创建于 ${time(it)}" },
+            entry.updatedAt.takeIf { it.isNotBlank() && it != entry.createdAt }?.let { "更新于 ${time(it)}" },
+        ).joinToString(" · "))
+        page.close.setOnClickListener { onClose() }
+        page.edit.setOnClickListener { edit(entry) }
+        page.clone.setOnClickListener { edit(entry.copy(id = 0, title = entry.title + " 副本")) }
+        page.delete.setOnClickListener {
+            confirm("删除记录", "确定删除「${entry.title}」吗？此操作不可撤销。") { store.mutate<Unit>("已删除") { deleteEntry(entry.id) } }
+        }
+        page.root
+    }
+
+    private fun bindCard(b: CardEntryBinding, entry: Entry, compact: Boolean): Unit = with(activity) {
         val m = CAT_MAP.getValue(entry.category)
-        b.root.setOnClickListener { edit(entry) }
         b.title.text = entry.title
         b.categoryIcon.setIcon(m.icon, m.color); b.categoryIcon.background = shape(weak(m.color), 9)
         if (entry.env.isNotBlank()) {
@@ -51,6 +90,12 @@ class EntryScreens(private val activity: VaultActivity) {
         b.favorite.setImageResource(if (entry.favorite) R.drawable.ic_star_filled else R.drawable.ic_star)
         b.favorite.tint(color(if (entry.favorite) R.color.star else R.color.border_strong))
         b.favorite.setOnClickListener { store.mutate<Unit> { toggleFavorite(entry.id) } }
+
+        if (compact) {
+            b.summary.showText(entry.username.ifBlank { entry.url })
+            b.fields.isVisible = false
+            return
+        }
 
         fun field(
             name: String,
@@ -112,7 +157,6 @@ class EntryScreens(private val activity: VaultActivity) {
         }
         b.notes.showText(entry.notes)
         b.tags.showText(splitTags(entry.tags).joinToString("  ") { "#$it" })
-        b.root
     }
 
     private fun totpRow(card: CardEntryBinding, config: TotpConfig?) {
@@ -259,7 +303,7 @@ class EntryScreens(private val activity: VaultActivity) {
                 tags = b.tags.value(), notes = b.notes.value(),
                 extra = extras.map { ExtraField(it.key.value(), it.value.value(), it.secret) },
             )
-            store.mutate("已保存", { form.dismiss() }) { saveEntry(updated) }
+            store.mutate<Long>("已保存", { id -> form.dismiss(); onSaved(id) }) { saveEntry(updated) }
         }
         if (entry.id != 0L) {
             b.existingActions.isVisible = true

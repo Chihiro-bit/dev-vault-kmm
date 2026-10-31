@@ -1,5 +1,5 @@
-<resources>
-    <style name="Theme.DevVault" parent="Theme.AppCompat.DayNight.NoActionBar">
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.DevVault" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorAccent">@color/primary</item>
         <item name="colorControlActivated">@color/primary</item>
@@ -8,8 +8,13 @@
         <item name="android:textColorPrimary">@color/text</item>
         <item name="android:textColorSecondary">@color/text2</item>
         <item name="android:windowBackground">@color/bg</item>
+        <!-- 沉浸式：状态栏透明，页面背景延伸到状态栏下方 -->
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@color/panel</item>
         <item name="android:windowLightStatusBar">@bool/light_system_bars</item>
+    </style>
+
+    <!-- API 26 不支持浅色导航栏图标，导航栏保留半透明深色底以保证白色图标可见 -->
+    <style name="Theme.DevVault" parent="Base.Theme.DevVault">
+        <item name="android:navigationBarColor">#66000000</item>
     </style>
 </resources>

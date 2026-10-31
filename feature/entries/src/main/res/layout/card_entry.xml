@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 账号卡片：与桌面端列表卡片一致。字段行（item_entry_field / item_entry_totp）按记录内容加入 fields -->
+<!-- 账号卡片：与桌面端列表卡片一致。字段行（item_entry_field / item_entry_totp）按记录内容加入 fields。
+     同一布局也用于宽屏右侧详情栏（完整显示）和宽屏列表（紧凑模式，只显示 summary） -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/DvCard"
@@ -101,6 +102,21 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 宽屏列表的紧凑卡片：只显示一行摘要（用户名或地址），完整字段在右侧详情栏中查看 -->
+    <TextView
+        android:id="@+id/summary"
+        style="@style/DvText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="46dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="6dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/text2"
+        android:textSize="13sp"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/fields"

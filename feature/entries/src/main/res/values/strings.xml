@@ -30,4 +30,7 @@
     <string name="entry_extra_value">值</string>
     <string name="entry_extra_secret">敏感字段</string>
     <string name="entry_extra_delete">删除字段</string>
+
+    <string name="entry_detail">记录详情</string>
+    <string name="entry_edit">编辑</string>
 </resources>

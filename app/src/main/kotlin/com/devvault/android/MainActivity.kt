@@ -3,6 +3,9 @@ package com.devvault.android
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.res.Configuration
+import androidx.core.graphics.Insets
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -33,6 +36,10 @@ import com.devvault.core.ui.R as CR
 
 /** 宽度达到此值（dp）时使用 layout-w600dp：左侧导航栏 */
 private const val WIDE_DP = 600
+/** 宽度达到此值（dp）时显示右侧详情栏：列表与详情并排，而不是打开新页面 */
+private const val PANE_DP = 840
+/** 左侧导航栏宽度（layout-w600dp 中的 88dp） */
+private const val RAIL_DP = 88
 
 /** 应用入口：底部三个页签（账号密码 / 待办事项 / 设置），内容由各功能模块提供 */
 class MainActivity : VaultActivity() {
@@ -54,16 +61,23 @@ class MainActivity : VaultActivity() {
     private lateinit var grid: GridLayoutManager
     /** 账号页的卡片列数：1 或 2，由列表实际宽度决定 */
     private var columns = 1
+    /** 宽屏详情栏中显示的账号记录 */
+    private var selectedEntry: Long? = null
+    /** detail_base 当前内容的标识（记录对象或占位提示），内容未变时不重建，保留滚动位置和动态码计时 */
+    private var baseKey: Any? = null
+    /** 系统栏与输入法占用的区域（沉浸式布局中由各区域自行避让） */
+    private var bars = Insets.NONE
+    private var imeBottom = 0
+
+    override val paneHost: ViewGroup? get() = if (::binding.isInitialized && paneEnabled()) binding.detailPane else null
+    private fun paneEnabled() = binding.detailPane != null && resources.configuration.screenWidthDp >= PANE_DP && tab != 2
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            val light = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK != Configuration.UI_MODE_NIGHT_YES
-            isAppearanceLightStatusBars = light; isAppearanceLightNavigationBars = light
-        }
         tab = savedInstanceState?.getInt("tab") ?: 0
         entryFilter = savedInstanceState?.getInt("entryFilter") ?: 0
+        selectedEntry = savedInstanceState?.getLong("selectedEntry", 0L)?.takeIf { it != 0L }
+        entries.onSaved = { id -> if (paneHost != null) { selectedEntry = id; render() } }
         inflateLayout()
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -73,7 +87,7 @@ class MainActivity : VaultActivity() {
                 launch { store.policyState.collect { if (tab == 2) render() } }
                 launch {
                     store.locked.collect { locked ->
-                        if (locked) { closeSensitivePages(); entries.clearSecrets(); settings.clearSecrets() }
+                        if (locked) { closeSensitivePages(); entries.clearSecrets(); settings.clearSecrets(); selectedEntry = null; render() }
                         binding.lock.isVisible = locked
                         binding.main.importantForAccessibility = if (locked) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
                     }
@@ -86,11 +100,15 @@ class MainActivity : VaultActivity() {
 
     override fun onResume() { super.onResume(); store.onResume() }
     override fun onStop() { store.onBackground(); super.onStop() }
-    override fun onSaveInstanceState(out: Bundle) { out.putInt("tab", tab); out.putInt("entryFilter", entryFilter); super.onSaveInstanceState(out) }
+    override fun onSaveInstanceState(out: Bundle) {
+        out.putInt("tab", tab); out.putInt("entryFilter", entryFilter); selectedEntry?.let { out.putLong("selectedEntry", it) }
+        super.onSaveInstanceState(out)
+    }
 
     /**
      * 清单中声明了 configChanges（旋转、分屏、折叠屏展开时不重建 Activity，以免丢失正在编辑的弹窗），
-     * 因此系统不会自动换用 layout-w600dp。宽度跨过 600dp 时在这里重新加载主界面布局。
+     * 因此系统不会自动换用 layout-w600dp。宽度跨过 600dp 时在这里重新加载主界面布局；
+     * 详情栏出现或消失时，打开中的账号编辑 / 待办详情在详情栏与全屏页面之间迁移，编辑内容不丢失。
      */
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -99,17 +117,19 @@ class MainActivity : VaultActivity() {
             inflateLayout()
             binding.search.setText(query)
             binding.lock.isVisible = store.locked.value
-            render()
         }
+        render(); relocatePages()
     }
 
     private fun inflateLayout() {
         if (::binding.isInitialized) { binding.list.adapter = null; binding.list.layoutManager = null }
         wideLayout = resources.configuration.screenWidthDp >= WIDE_DP
         binding = ActivityMainBinding.inflate(layoutInflater); setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
-            val e = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            view.setPadding(e.left, e.top, e.right, e.bottom); insets
+        baseKey = null
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            applyInsets(); WindowInsetsCompat.CONSUMED
         }
         grid = GridLayoutManager(this, columns).apply {
             spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -126,8 +146,32 @@ class MainActivity : VaultActivity() {
         binding.unlock.setOnClickListener { store.unlock() }
         tabs().forEachIndexed { i, (nav, name, icon) ->
             nav.navLabel.setText(name); nav.navIcon.setImageResource(icon.res); nav.root.contentDescription = getString(name)
-            nav.root.setOnClickListener { if (tab != i) { tab = i; binding.search.setText(""); render(); binding.list.scrollToPosition(0) } }
+            nav.root.setOnClickListener {
+                if (tab != i) { closePanePages(); tab = i; binding.search.setText(""); render(); binding.list.scrollToPosition(0) }
+            }
         }
+    }
+
+    /**
+     * 沉浸式布局：顶部栏、导航栏的背景延伸到状态栏 / 系统导航栏下方，内容本身避开这些区域。
+     * 输入法弹出时整个主界面抬到输入法上方（等同于 adjustResize）。
+     */
+    private fun applyInsets() {
+        val bottom = if (imeBottom > 0) 0 else bars.bottom
+        binding.main.setPadding(if (wideLayout) 0 else bars.left, 0, bars.right, imeBottom)
+        if (wideLayout) {
+            binding.navigation.updatePadding(left = bars.left, top = dp(20) + bars.top)
+            binding.navigation.updateLayoutParams { width = dp(RAIL_DP) + bars.left }
+            binding.header.updatePadding(top = bars.top)
+            binding.header.updateLayoutParams { height = dp(64) + bars.top }
+            binding.add.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = dp(24) + bottom }
+            binding.detailPane?.updatePadding(bottom = bottom)
+        } else {
+            binding.header.updatePadding(top = dp(12) + bars.top)
+            binding.navigation.updatePadding(bottom = bottom)
+            binding.navigation.updateLayoutParams { height = dp(58) + bottom }
+        }
+        updateContentWidth()
     }
 
     /**
@@ -141,7 +185,8 @@ class MainActivity : VaultActivity() {
         val maxWidth = resources.getDimensionPixelSize(if (wantColumns == 2) CR.dimen.content_max_width_wide else CR.dimen.content_max_width)
         val side = maxOf(resources.getDimensionPixelSize(CR.dimen.page_margin), (width - maxWidth) / 2)
         val gap = if (wantColumns == 2) dp(6) else 0
-        val bottom = dp(if (tab == 0) 96 else 32)
+        // 宽屏时列表一直延伸到屏幕底部，需要避开系统导航栏
+        val bottom = dp(if (tab == 0) 96 else 32) + if (wideLayout && imeBottom == 0) bars.bottom else 0
         if (binding.list.paddingLeft != side - gap || binding.list.paddingBottom != bottom) binding.list.setPadding(side - gap, 0, side - gap, bottom)
         if (binding.filterScroll.paddingLeft != side) binding.filterScroll.setPadding(side, binding.filterScroll.paddingTop, side, binding.filterScroll.paddingBottom)
         records.gap = gap
@@ -171,6 +216,36 @@ class MainActivity : VaultActivity() {
         }
         updateContentWidth()
         renderNavigation()
+        renderPane()
+    }
+
+    /** 右侧详情栏：账号页显示选中的记录，待办页显示占位提示（待办详情页面叠加在其上方） */
+    private fun renderPane() {
+        val pane = binding.detailPane ?: return
+        val base = binding.detailBase ?: return
+        val show = paneEnabled()
+        pane.isVisible = show; binding.detailDivider?.isVisible = show
+        if (!show) { base.removeAllViews(); baseKey = null; return }
+        val available = resources.configuration.screenWidthDp - RAIL_DP
+        val width = dp((available / 2).coerceIn(360, 640))
+        if (pane.layoutParams.width != width) pane.updateLayoutParams { this.width = width }
+        val entry = if (tab == 0) store.entries.value.find { it.id == selectedEntry } else null
+        if (tab == 0 && entry == null) selectedEntry = null
+        val key: Any = entry ?: if (tab == 0) "entries" else "todos"
+        if (key == baseKey) return
+        baseKey = key
+        base.removeAllViews()
+        val view = when {
+            entry != null -> entries.detail(entry) { selectedEntry = null; render() }
+            tab == 0 -> emptyView(DvIcon.Key, getString(R.string.entry_pick_title), getString(R.string.entry_pick_desc))
+            else -> emptyView(DvIcon.Check, getString(R.string.todo_pick_title), getString(R.string.todo_pick_desc))
+        }
+        base.addView(view, FrameLayout.LayoutParams(-1, if (entry != null) -1 else -2, Gravity.CENTER))
+    }
+
+    /** 宽屏：在详情栏中显示记录（关闭详情栏中正在编辑的页面） */
+    private fun selectEntry(id: Long) {
+        closePanePages(); selectedEntry = id; render()
     }
 
     private fun renderNavigation() {
@@ -212,7 +287,9 @@ class MainActivity : VaultActivity() {
             DvIcon.Key,
             if (all.isEmpty()) "还没有记录" else "没有匹配的记录",
             if (all.isEmpty()) "点击右下角「新建记录」添加测试账号、Git、VPN 等凭据" else "换个关键词或筛选条件试试",
-        )) to false else shown.map(entries::card) to true
+        )) to false else if (paneEnabled()) {
+            shown.map { e -> entries.card(e, compact = true, selected = e.id == selectedEntry) { selectEntry(e.id) } } to true
+        } else shown.map { entries.card(it) } to true
     }
 
     private fun chooseProject() {

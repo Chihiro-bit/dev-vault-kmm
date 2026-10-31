@@ -2,6 +2,7 @@
 <!--
   宽度 ≥ 600dp（横屏手机、折叠屏展开、平板）：左侧导航栏替代底部导航，
   标题 / 项目切换 / 搜索合并为一行以节省高度；内容列的居中限宽由 MainActivity 按实际宽度计算。
+  宽度足够时（MainActivity.PANE_DP）右侧显示详情栏：点击账号卡片、待办在右侧查看详情，列表保持可见。
   与 layout/activity_main.xml 使用相同的 id 和控件类型，ViewBinding 共用同一个绑定类。
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -152,7 +153,7 @@
             android:paddingEnd="16dp"
             android:paddingBottom="12dp"
             android:scrollbars="none"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/detail_divider"
             app:layout_constraintStart_toEndOf="@id/nav_divider"
             app:layout_constraintTop_toBottomOf="@id/header_divider">
 
@@ -172,7 +173,7 @@
             android:paddingEnd="16dp"
             android:paddingBottom="96dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/detail_divider"
             app:layout_constraintStart_toEndOf="@id/nav_divider"
             app:layout_constraintTop_toBottomOf="@id/filter_scroll" />
 
@@ -195,7 +196,35 @@
             android:textColor="@android:color/white"
             android:textSize="15sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toStartOf="@id/detail_divider" />
+
+        <!-- 右侧详情栏：宽度由 MainActivity 计算；detail_base 为底层（账号详情 / 占位提示），
+             账号编辑、待办详情等页面叠加在其上方 -->
+        <View
+            android:id="@+id/detail_divider"
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:background="@color/border"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/detail_pane"
+            app:layout_constraintTop_toBottomOf="@id/header_divider" />
+
+        <FrameLayout
+            android:id="@+id/detail_pane"
+            android:layout_width="400dp"
+            android:layout_height="0dp"
+            android:background="@color/bg"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/header_divider">
+
+            <FrameLayout
+                android:id="@+id/detail_base"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- 应用锁 -->

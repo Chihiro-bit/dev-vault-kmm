@@ -58,16 +58,28 @@ class LayoutSmokeTest : InstrumentationTestCase() {
         } }
         assertTrue("Seed loaded",latch.await(15,TimeUnit.SECONDS)); instrumentation.waitForIdleSync()
         waitFor("entry card") { find("商城测试账号")!=null }
-        assertNotNull(findOnMain("复制密码")); shot("01-entries")
+        var pane=false; ui { pane=activity.paneHost!=null }
+        if(pane) {
+            // 宽屏：列表为紧凑卡片，点击后在右侧详情栏显示完整记录
+            assertNull(findOnMain("复制密码")); click("商城测试账号"); waitFor("entry detail pane") { find("记录详情")!=null && find("复制密码")!=null }
+            ui { assertTrue("no dialog for detail",dialogs().isEmpty()) }
+        } else assertNotNull(findOnMain("复制密码"))
+        shot("01-entries")
         click("新建记录"); waitFor("full-screen edit") { find("保存")!=null }
-        ui { val d=dialogs().last(); assertEquals(activity.window.decorView.width,d.window!!.decorView.width); assertNotNull(find("类型")); assertNotNull(find("环境")) }; shot("02-entry-edit")
-        ui { dialogs().last().dismiss() }; click("待办事项"); waitFor("todo stats") { find("进行中")!=null }; shot("03-todos")
+        ui {
+            if(pane) assertTrue("edit embedded in pane",dialogs().isEmpty())
+            else { val d=dialogs().last(); assertEquals(activity.window.decorView.width,d.window!!.decorView.width) }
+            assertNotNull(find("类型")); assertNotNull(find("环境"))
+        }; shot("02-entry-edit")
+        closeTop(); click("待办事项"); waitFor("todo stats") { find("进行中")!=null }; shot("03-todos")
         // 横屏 / 小窗时待办行可能在可视区域外，先滚到列表末尾
         ui { activity.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.list).let { it.scrollToPosition(it.adapter!!.itemCount-1) } }; waitFor("todo row") { find("验证登录流程")!=null }
         ui { val title=find("验证登录流程")!!; (title.parent.parent as View).performClick() }; waitFor("todo detail") { find("进展记录")!=null }; shot("04-todo-detail")
-        ui { dialogs().last().dismiss() }; click("设置"); waitFor("inline login") { find("服务器地址")!=null }; shot("05-settings")
+        closeTop(); click("设置"); waitFor("inline login") { find("服务器地址")!=null }; shot("05-settings")
         click("注册"); waitFor("register fields") { find("确认主密码")!=null }; shot("06-register")
         ui { activity.finish() }
     }
+    /** 关闭最上层的全屏页面：窄屏为弹窗，宽屏为详情栏中的页面 */
+    private fun closeTop() { ui { dialogs().lastOrNull()?.dismiss() ?: activity.closePanePages() }; instrumentation.waitForIdleSync() }
     private fun findOnMain(text:String):View? { var result:View?=null; ui { result=find(text) }; return result }
 }

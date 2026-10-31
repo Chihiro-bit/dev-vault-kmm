@@ -1,0 +1,10 @@
+<resources>
+    <!-- API 29+：关闭系统为三键导航自动加的半透明遮罩，由底部导航栏背景延伸到系统导航栏下方 -->
+    <style name="Theme.DevVault" parent="Base.Theme.DevVault">
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightNavigationBar">@bool/light_system_bars</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+    </style>
+</resources>

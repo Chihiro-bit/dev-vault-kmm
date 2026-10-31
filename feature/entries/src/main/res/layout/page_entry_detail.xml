@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 宽屏右侧详情栏中的账号详情：标题栏（编辑 / 复制为新记录 / 删除）+ 完整卡片（card_entry.xml 加入 content） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/panel"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="6dp"
+        android:paddingEnd="8dp">
+
+        <ImageButton
+            android:id="@+id/close"
+            style="@style/DvIconButton"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="@string/close"
+            android:padding="12dp"
+            android:src="@drawable/ic_x"
+            app:tint="@color/text2" />
+
+        <TextView
+            style="@style/DvText.Medium"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:text="@string/entry_detail"
+            android:textSize="17sp" />
+
+        <ImageButton
+            android:id="@+id/clone"
+            style="@style/DvIconButton"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="@string/entry_clone"
+            android:padding="11dp"
+            android:src="@drawable/ic_clone"
+            app:tint="@color/text2" />
+
+        <ImageButton
+            android:id="@+id/delete"
+            style="@style/DvIconButton"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="@string/delete"
+            android:padding="11dp"
+            android:src="@drawable/ic_trash"
+            app:tint="@color/danger" />
+
+        <Button
+            android:id="@+id/edit"
+            style="@style/DvButton.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginStart="4dp"
+            android:text="@string/entry_edit"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <View style="@style/DvDivider" />
+
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/content"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_max="@dimen/form_max_width">
+
+                <TextView
+                    android:id="@+id/timestamps"
+                    style="@style/DvText.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_horizontal" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</LinearLayout>
