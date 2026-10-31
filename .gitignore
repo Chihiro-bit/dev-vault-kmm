@@ -1,0 +1,13 @@
+.gradle/
+build/
+local.properties
+.idea/
+.kotlin/
+*.iml
+captures/
+.cxx/
+# iOS
+iosApp/*.xcodeproj/
+iosApp/build/
+xcuserdata/
+DerivedData/
