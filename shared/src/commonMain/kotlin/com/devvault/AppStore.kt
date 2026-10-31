@@ -1,5 +1,7 @@
 package com.devvault
 
+import com.devvault.data.Policy
+import com.devvault.data.PolicyState
 import com.devvault.data.Repository
 import com.devvault.data.Schema
 import com.devvault.model.Entry
@@ -36,7 +38,8 @@ class AppStore private constructor() {
     val db = Schema.open(Platform.databasePath())
     val repo = Repository(db)
     val cloud = Cloud(db, repo)
-    val sync = SyncEngine(db, repo, cloud, scope) { refresh() }
+    val policy = Policy(db, repo)
+    val sync = SyncEngine(db, repo, policy, cloud, scope) { refresh() }
 
     private val _projectScope = MutableStateFlow<Scope>(Scope.All)
     val projectScope: StateFlow<Scope> = _projectScope.asStateFlow()
@@ -47,6 +50,9 @@ class AppStore private constructor() {
     val todos = MutableStateFlow<List<Todo>>(emptyList())
     val statuses = MutableStateFlow<List<TodoStatus>>(emptyList())
     val priorities = MutableStateFlow<List<PriorityLevel>>(emptyList())
+
+    /** 账号安全策略 */
+    val policyState = MutableStateFlow(PolicyState())
 
     /** 每次本地数据变化 +1，详情页据此重新读取 */
     val version = MutableStateFlow(0L)
@@ -68,7 +74,14 @@ class AppStore private constructor() {
         lockEnabled.value = enabled
         locked.value = enabled && DeviceAuth.isAvailableSafe()
 
-        cloud.onSessionChange = { loggedIn -> if (loggedIn) sync.start() else sync.stop() }
+        cloud.onSessionChange = { loggedIn ->
+            if (loggedIn) {
+                sync.start()
+            } else {
+                sync.stop()
+                wipeIfRequired()
+            }
+        }
         cloud.onSessionExpired = { show("登录已过期，请重新登录", error = true) }
         scope.launch {
             cloud.load()
@@ -89,7 +102,7 @@ class AppStore private constructor() {
                 // 当前项目已被删除（例如在其他设备上）时回到「全部项目」
                 val ps = repo.listProjects()
                 val sc = if (s is Scope.Project && ps.none { it.id == s.id }) Scope.All else s
-                Snapshot(sc, ps, repo.stats(), repo.listEntries(sc), repo.listTodos(sc), repo.listStatuses(), repo.listPriorities())
+                Snapshot(sc, ps, repo.stats(), repo.listEntries(sc), repo.listTodos(sc), repo.listStatuses(), repo.listPriorities(), policy.state())
             }
             _projectScope.value = snapshot.scope
             projects.value = snapshot.projects
@@ -98,6 +111,7 @@ class AppStore private constructor() {
             todos.value = snapshot.todos
             statuses.value = snapshot.statuses
             priorities.value = snapshot.priorities
+            policyState.value = snapshot.policy
             version.value++
         }
     }
@@ -110,6 +124,7 @@ class AppStore private constructor() {
         val todos: List<Todo>,
         val statuses: List<TodoStatus>,
         val priorities: List<PriorityLevel>,
+        val policy: PolicyState,
     )
 
     /** 在数据库线程执行修改；成功后刷新并安排同步，失败时提示错误 */
@@ -137,6 +152,47 @@ class AppStore private constructor() {
                 show(e.message ?: "读取失败", error = true)
             }
         }
+    }
+
+    // ---------- 账号安全策略 ----------
+
+    /** 退出登录（含登录失效）后，策略要求时清除本机数据 */
+    private fun wipeIfRequired() {
+        scope.launch {
+            val wiped = db.io {
+                if (policy.state().wipeOnLogout) {
+                    policy.wipeLocalData()
+                    true
+                } else {
+                    false
+                }
+            }
+            if (wiped) {
+                refresh()
+                show("已按账号安全策略清除本机数据")
+            }
+        }
+    }
+
+    /**
+     * 退出前的准备：策略要求清除本机数据时先同步一次，返回仍未上传的修改数（不清除时返回 0）。
+     */
+    suspend fun prepareLogout(): Int {
+        if (!policyState.value.wipeOnLogout) return 0
+        try {
+            sync.syncNow()
+        } catch (_: Exception) {
+            // 同步失败时按未上传处理
+        }
+        return db.io { sync.pendingCount() }
+    }
+
+    /** 修改策略（需安全码，含 scrypt 计算），成功后同步到该账号的其他设备 */
+    suspend fun updatePolicy(code: String?, newCode: String?, allowExport: Boolean, wipeOnLogout: Boolean) {
+        val state = db.io { policy.update(code, newCode, allowExport, wipeOnLogout) }
+        policyState.value = state
+        sync.refreshPending()
+        sync.schedule(500)
     }
 
     fun show(text: String, error: Boolean = false) {

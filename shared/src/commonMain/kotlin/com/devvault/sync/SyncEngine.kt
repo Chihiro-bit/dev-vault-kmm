@@ -3,6 +3,7 @@ package com.devvault.sync
 import com.devvault.crypto.E2ee
 import com.devvault.crypto.LocalCipher
 import com.devvault.data.Db
+import com.devvault.data.Policy
 import com.devvault.data.Repository
 import com.devvault.data.Row
 import com.devvault.data.Schema
@@ -20,6 +21,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -39,6 +41,7 @@ import kotlinx.serialization.json.put
 class SyncEngine(
     private val db: Db,
     private val repo: Repository,
+    private val policy: Policy,
     private val cloud: Cloud,
     private val scope: CoroutineScope,
     /** 云端数据写入本地后回调，用于刷新界面 */
@@ -55,7 +58,10 @@ class SyncEngine(
     private val DEBOUNCE_MS = 3_000L
 
     private val TABLE = Schema.SYNC_TABLES.associate { it.kind to it.table }
-    private val ORDER = listOf("priority", "status", "project", "entry", "todo", "comment")
+    private val ORDER = listOf("policy", "priority", "status", "project", "entry", "todo", "comment")
+
+    /** 策略只有一条记录，固定 id */
+    private val POLICY_ID = "account"
     private fun isKind(k: String) = k in TABLE
 
     private val json get() = cloud.json
@@ -119,6 +125,16 @@ class SyncEngine(
 
     /** 本地记录 → 明文内容（解开本机加密的字段，把关联 id 转成 uid）。键名与桌面端一致 */
     private fun serialize(kind: String, r: Row): JsonObject = when (kind) {
+        "policy" -> buildJsonObject {
+            put("allow_export", r.bool("allow_export"))
+            put("wipe_on_logout", r.bool("wipe_on_logout"))
+            val code = try {
+                r.str("code").takeIf { it.isNotEmpty() }?.let { json.parseToJsonElement(it) as? JsonObject }
+            } catch (e: Exception) {
+                null
+            }
+            put("code", code ?: JsonNull)
+        }
         "priority" -> buildJsonObject {
             put("label", r.str("label")); put("name", r.str("name")); put("color", r.str("color"))
             put("sort_order", r.long("sort_order")); put("is_default", r.bool("is_default"))
@@ -210,6 +226,19 @@ class SyncEngine(
     /** 云端内容写入本地（调用方已开启 sync_apply，触发器不会把这些写入当作本地修改） */
     private fun applyUpsert(kind: String, item: RemoteItem, d: JsonObject, parents: MutableMap<String, String?>) {
         when (kind) {
+            "policy" -> {
+                if (item.id != POLICY_ID) return // 不认识的策略记录，忽略
+                val code = d["code"] as? JsonObject
+                // 单行表（id 固定为 1），直接更新
+                db.exec(
+                    """UPDATE policy SET allow_export = ?, wipe_on_logout = ?, code = ?, uid = ?,
+                         sync_rev = ?, sync_dirty = 0, sync_mtime = ? WHERE id = 1""",
+                    (d["allow_export"] as? JsonPrimitive)?.booleanOrNull != false,
+                    d.b("wipe_on_logout"),
+                    code?.let { json.encodeToString(JsonObject.serializer(), it) } ?: "",
+                    item.id, item.revision, item.modifiedAt,
+                )
+            }
             "priority" -> upsert(kind, item, mapOf(
                 "label" to d.s("label", "?"), "name" to d.s("name"), "color" to d.s("color", "#3b6cff"),
                 "sort_order" to d.n("sort_order"), "is_default" to d.b("is_default"),
@@ -444,9 +473,15 @@ class SyncEngine(
 
     // ---------- 账号绑定与调度 ----------
 
-    /** 切换到另一个账号（或服务器）时，本机所有数据视为未同步，登录后整体上传并与云端合并 */
+    /**
+     * 切换到另一个账号（或服务器）时，本机所有数据视为未同步，登录后整体上传并与云端合并。
+     * 例外：上一个账号的安全策略限制了数据外流，则先清除本机数据，否则退出后登录自己的账号即可转存。
+     * 上一个账号的策略本身不会带到新账号。
+     */
     private fun bindAccount(account: String) {
-        if (repo.getSetting(Key.ACCOUNT) == account) return
+        val previous = repo.getSetting(Key.ACCOUNT)
+        if (previous == account) return
+        if (previous != null && policy.isRestrictive()) policy.wipeLocalData() else policy.resetRow()
         db.tx {
             for (t in Schema.SYNC_TABLES) db.exec("UPDATE ${t.table} SET sync_rev = 0, sync_dirty = 1")
             db.exec("DELETE FROM sync_tombstones WHERE rev > 0")

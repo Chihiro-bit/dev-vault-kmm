@@ -1,6 +1,7 @@
 package com.devvault
 
 import com.devvault.crypto.E2ee
+import com.devvault.data.PolicyCode
 import com.devvault.crypto.HashAlgorithm
 import com.devvault.crypto.KdfParams
 import com.devvault.crypto.Scrypt
@@ -84,6 +85,15 @@ class CryptoCompatTest {
             soft[0] = (soft[0] + 1).toByte()
             if (len > 0) assertFailsWith<Exception> { SoftAesGcm.open(key, iv, soft, aad) }
         }
+    }
+
+    @Test
+    fun policyCodeMatchesDesktop() {
+        // 桌面端 policy.ts：HKDF(scrypt(NFKC("安全码ＡＢ12")), "devvault/policy-code/v1")
+        assertEquals(
+            "2Cw8Wgm0Bu+JkCn4h4iNLK5QEFDAw8GrPjxPMKyuhHI=",
+            PolicyCode.derive("安全码ＡＢ12", KdfParams("scrypt", 1024, 8, 1, "Dw4NDAsKCQgHBgUEAwIBAA==")),
+        )
     }
 
     @Test

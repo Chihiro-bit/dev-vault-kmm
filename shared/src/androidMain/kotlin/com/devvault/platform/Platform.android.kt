@@ -14,6 +14,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import androidx.core.content.edit
 
 @SuppressLint("StaticFieldLeak")
 actual object Platform {
@@ -70,7 +71,12 @@ actual object Platform {
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
             cipher.init(Cipher.ENCRYPT_MODE, wrapper)
             val wrapped = cipher.iv + cipher.doFinal(fresh)
-            prefs.edit().putString(PREF_KEY, Base64.encodeToString(wrapped, Base64.NO_WRAP)).commit()
+            prefs.edit(commit = true) {
+                putString(
+                    PREF_KEY,
+                    Base64.encodeToString(wrapped, Base64.NO_WRAP)
+                )
+            }
             fresh
         }
         cachedDeviceKey = key

@@ -69,6 +69,7 @@ const val APP_VERSION = "1.0.0"
 fun SettingsScreen(onEditProject: (Project) -> Unit, onNewProject: () -> Unit) {
     val store = remember { AppStore.get() }
     val projects by store.projects.collectAsState()
+    val cloudState by store.cloud.state.collectAsState()
     val c = Dv.colors
     Column(Modifier.fillMaxSize()) {
         PageHeader("设置")
@@ -76,6 +77,12 @@ fun SettingsScreen(onEditProject: (Project) -> Unit, onNewProject: () -> Unit) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
             SectionTitle("账号与云同步")
             CloudCard()
+
+            if (cloudState.loggedIn) {
+                Spacer(Modifier.height(20.dp))
+                SectionTitle("账号安全策略")
+                PolicyCard()
+            }
 
             Spacer(Modifier.height(20.dp))
             SectionTitle("安全")
@@ -203,10 +210,31 @@ private fun CloudCard() {
     }
 
     if (changingPassword) ChangePasswordDialog { changingPassword = false }
+    val policy by store.policyState.collectAsState()
+    var unsent by remember { mutableStateOf<Int?>(null) }
     if (confirmLogout) {
-        ConfirmDialog("退出登录", "退出后本机数据保留，但不再与云端同步。", confirm = "退出", onDismiss = { confirmLogout = false }) {
-            scope.launch { store.cloud.logout() }
+        ConfirmDialog(
+            "退出登录",
+            if (policy.wipeOnLogout) "按账号安全策略，退出后将清除本机的账号密码和待办；重新登录后会从云端恢复已同步的数据。"
+            else "退出后本机数据保留，但不再与云端同步。",
+            confirm = if (policy.wipeOnLogout) "退出并清除" else "退出",
+            danger = policy.wipeOnLogout,
+            onDismiss = { confirmLogout = false },
+        ) {
+            scope.launch {
+                // 需要清除本机数据时先同步，仍有未上传的修改则再次确认
+                val pending = store.prepareLogout()
+                if (pending > 0) unsent = pending else store.cloud.logout()
+            }
         }
+    }
+    unsent?.let { n ->
+        ConfirmDialog(
+            "还有 $n 项修改未能上传",
+            "退出后会清除本机数据，这些修改将丢失。请检查网络后重试，或确认直接退出。",
+            confirm = "仍然退出",
+            onDismiss = { unsent = null },
+        ) { scope.launch { store.cloud.logout() } }
     }
 }
 

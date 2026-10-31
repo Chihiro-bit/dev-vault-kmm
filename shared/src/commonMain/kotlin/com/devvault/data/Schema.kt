@@ -5,7 +5,7 @@ package com.devvault.data
  * 同步相关的触发器逻辑完全相同：本地修改标记 sync_dirty，删除写入 sync_tombstones。
  */
 object Schema {
-    const val VERSION = 1
+    const val VERSION = 2
 
     private const val NOW = "(datetime('now','localtime'))"
     const val NOW_MS = "CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)"
@@ -13,7 +13,11 @@ object Schema {
 
     class SyncTable(val table: String, val kind: String, val cols: List<String>)
 
-    val SYNC_TABLES = listOf(
+    /** 账号安全策略（v2）：单行表，随账号同步，与桌面端 db.ts v8 一致 */
+    val POLICY_TABLE = SyncTable("policy", "policy", listOf("allow_export", "wipe_on_logout", "code"))
+
+    /** v1 建表时已有的同步表 */
+    private val BASE_SYNC_TABLES = listOf(
         SyncTable("priorities", "priority", listOf("label", "name", "color", "sort_order", "is_default")),
         SyncTable("statuses", "status", listOf("name", "color", "kind", "sort_order")),
         SyncTable("projects", "project", listOf("name", "color", "description", "sort_order")),
@@ -32,6 +36,37 @@ object Schema {
             ),
         ),
         SyncTable("todo_comments", "comment", listOf("content")),
+    )
+
+    val SYNC_TABLES = listOf(POLICY_TABLE) + BASE_SYNC_TABLES
+
+    /** 内置优先级 / 状态（每台设备 id 与 uid 相同），清除本机数据后也用它恢复 */
+    val SEED_PRIORITIES = """INSERT INTO priorities (id, label, name, color, sort_order, is_default, uid, sync_dirty, sync_mtime) VALUES
+  (1, 'P0', '紧急', '#e5484d', 0, 0, 'priority-1', 1, 1),
+  (2, 'P1', '高',   '#f76b15', 1, 0, 'priority-2', 1, 1),
+  (3, 'P2', '中',   '#3b6cff', 2, 1, 'priority-3', 1, 1),
+  (4, 'P3', '低',   '#8a919e', 3, 0, 'priority-4', 1, 1)"""
+
+    val SEED_STATUSES = """INSERT INTO statuses (id, name, color, kind, sort_order, uid, sync_dirty, sync_mtime) VALUES
+  (1, '待开始', '#8a919e', 'todo',   0, 'status-1', 1, 1),
+  (2, '进行中', '#3b6cff', 'active', 1, 'status-2', 1, 1),
+  (3, '待验证', '#e3a008', 'active', 2, 'status-3', 1, 1),
+  (4, '已完成', '#16a37b', 'done',   3, 'status-4', 1, 1)"""
+
+    // v2：账号安全策略。固定 uid 'account'、修改时间记为 1，未修改过的默认策略不会覆盖其他设备的设置
+    private val V2 = listOf(
+        """CREATE TABLE IF NOT EXISTS policy (
+  id             INTEGER PRIMARY KEY CHECK (id = 1),
+  allow_export   INTEGER NOT NULL DEFAULT 1,
+  wipe_on_logout INTEGER NOT NULL DEFAULT 0,
+  code           TEXT NOT NULL DEFAULT ''$SYNC_COLS
+)""",
+        "INSERT OR IGNORE INTO policy (id, uid, sync_dirty, sync_mtime) VALUES (1, 'account', 1, 1)",
+        """CREATE TRIGGER IF NOT EXISTS trg_policy_sync_upd AFTER UPDATE OF ${POLICY_TABLE.cols.joinToString(", ")} ON policy
+WHEN $NOT_APPLYING
+BEGIN
+  UPDATE policy SET sync_dirty = 1, sync_mtime = $NOW_MS WHERE id = NEW.id;
+END""",
     )
 
     private const val SYNC_COLS = """,
@@ -128,18 +163,7 @@ object Schema {
      * 修改时间记为 1：多台设备都未修改过时，以最先同步的设备为准（与桌面端一致）。
      * 必须在创建触发器之前写入，否则插入触发器会改写修改时间。
      */
-    private val SEED = listOf(
-        """INSERT INTO priorities (id, label, name, color, sort_order, is_default, uid, sync_dirty, sync_mtime) VALUES
-  (1, 'P0', '紧急', '#e5484d', 0, 0, 'priority-1', 1, 1),
-  (2, 'P1', '高',   '#f76b15', 1, 0, 'priority-2', 1, 1),
-  (3, 'P2', '中',   '#3b6cff', 2, 1, 'priority-3', 1, 1),
-  (4, 'P3', '低',   '#8a919e', 3, 0, 'priority-4', 1, 1)""",
-        """INSERT INTO statuses (id, name, color, kind, sort_order, uid, sync_dirty, sync_mtime) VALUES
-  (1, '待开始', '#8a919e', 'todo',   0, 'status-1', 1, 1),
-  (2, '进行中', '#3b6cff', 'active', 1, 'status-2', 1, 1),
-  (3, '待验证', '#e3a008', 'active', 2, 'status-3', 1, 1),
-  (4, '已完成', '#16a37b', 'done',   3, 'status-4', 1, 1)""",
-    )
+    private val SEED get() = listOf(SEED_PRIORITIES, SEED_STATUSES)
 
     private fun triggers(t: SyncTable) = listOf(
         """CREATE TRIGGER IF NOT EXISTS trg_${t.table}_sync_ins AFTER INSERT ON ${t.table} WHEN $NOT_APPLYING
@@ -169,8 +193,14 @@ END""",
             db.tx {
                 TABLES.forEach { db.exec(it) }
                 SEED.forEach { db.exec(it) }
-                SYNC_TABLES.flatMap { triggers(it) }.forEach { db.exec(it) }
-                db.exec("PRAGMA user_version = $VERSION")
+                BASE_SYNC_TABLES.flatMap { triggers(it) }.forEach { db.exec(it) }
+                db.exec("PRAGMA user_version = 1")
+            }
+        }
+        if (current < 2) {
+            db.tx {
+                V2.forEach { db.exec(it) }
+                db.exec("PRAGMA user_version = 2")
             }
         }
         return db
